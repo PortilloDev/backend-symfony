@@ -7,8 +7,10 @@
 
 `symfony new nombre_proyecto`
 
-### Dependencias instaladas:
+## Dependencias instaladas
 
+
+### Desarrollo:
 ```
   - composer require annotations 
   - composer require logger
@@ -16,5 +18,17 @@
   - composer require --dev symfony/maker-bundle
   - composer require symfony/serializer-pack
   - composer require friendsofsymfony/rest-bundle
-  - composer require symfony/validator twig doctrine/annotations
+  - composer require symfony/twig-pack
+  - composer require symfony/validator doctrine/annotations
+  - composer require form
+  - composer require league/flysystem-bundle
+```
+
+### Tests:
+
+```
+ - composer require --dev symfony/test-pack
+ - composer require --dev doctrine/doctrine-fixtures-bundle
+ - composer require --dev dama/doctrine-test-bundle
+
 ```

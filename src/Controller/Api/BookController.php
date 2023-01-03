@@ -8,6 +8,7 @@ use App\Entity\Book;
 use App\Form\Model\BookDto;
 use App\Form\Type\BookFormType;
 use App\Repository\BookRepository;
+use App\Services\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations\View as ViewAttribute;
 use FOS\RestBundle\Controller\Annotations\{Delete, Get, Post, Put, Patch};
 use FOS\RestBundle\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class BookController extends AbstractFOSRestController
 {
@@ -29,20 +31,30 @@ class BookController extends AbstractFOSRestController
 
     #[Post(path: "/books", name: "books_create")]
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
-    public function postAction(Request $request, EntityManagerInterface $entityManagerInterface, FilesystemOperator $defaultStorage)
+    public function postAction(Request $request, EntityManagerInterface $entityManagerInterface, FileUploader $fileUploader)
     {
         $bookDto = new BookDto();
 
         $form = $this->createForm(BookFormType::class, $bookDto);
 
         $form->handleRequest($request);
+        
+        if( ! $form->isSubmitted() ) {
 
-        if( $form->isSubmitted() && $form->isValid()) {
+            return new Response('', Response::HTTP_BAD_REQUEST);
+        }
+
+        if( $form->isValid()) {
             $book = new Book();
-            $image = $this->getFile($bookDto->base64Image, $defaultStorage);
-
             $book->setTitle($bookDto->title);
-            $book->setImage($image);
+
+            if ($bookDto->base64Image) {
+                
+                $image = $fileUploader->uploadBase64File($bookDto->base64Image);
+                $book->setImage($image);
+
+            }
+
             $entityManagerInterface->persist($book);
             $entityManagerInterface->flush();
 
