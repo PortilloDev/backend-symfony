@@ -1,0 +1,15 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+    
+# config/routes.yaml
+books:
+    path: /api/books
+    controller: App\Controller\Api\BookController::getAction
+    methods: GET
+books_create:
+    path: /api/books
+    controller: App\Controller\Api\BookController::postAction
+    methods: POST
