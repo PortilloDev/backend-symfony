@@ -5,6 +5,9 @@ controllers:
     type: attribute
     
 # config/routes.yaml
+
+# Books
+
 books:
     path: /api/books
     controller: App\Controller\Api\BookController::getAction
@@ -12,4 +15,29 @@ books:
 books_create:
     path: /api/books
     controller: App\Controller\Api\BookController::postAction
+    methods: POST
+books_edit:
+    path: /api/books/{id}
+    controller: App\Controller\Api\BookController::editAction
+    methods: POST   
+books_delete:
+    path: /api/books/{id}
+    controller: App\Controller\Api\BookController::deleteAction
+    methods: DELETE   
+
+book_find_id:
+    path: /api/books/{id}
+    controller: App\Controller\Api\BookController::getSingleAction
+    methods: GET
+
+
+# Categories
+
+categories:
+    path: /api/categories
+    controller: App\Controller\Api\CategoryController::getAction
+    methods: GET
+categories_create:
+    path: /api/categories
+    controller: App\Controller\Api\CategoryController::postAction
     methods: POST

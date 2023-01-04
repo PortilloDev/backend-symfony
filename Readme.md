@@ -32,3 +32,11 @@
  - composer require --dev dama/doctrine-test-bundle
 
 ```
+
+### Security
+
+```
+ - composer require symfony/security-bundle
+
+
+```
