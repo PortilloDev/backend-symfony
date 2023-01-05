@@ -4,53 +4,107 @@ namespace App\Controller\Api;
 
 
 
-use App\Entity\Book;
-use App\Form\Model\BookDto;
-use App\Form\Type\BookFormType;
-use App\Repository\BookRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use League\Flysystem\FilesystemOperator;
-use Symfony\Component\HttpFoundation\Request;
+
+use App\Services\BookFormProcessor;
+use App\Services\BookManager;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations\View as ViewAttribute;
 use FOS\RestBundle\Controller\Annotations\{Delete, Get, Post, Put, Patch};
 use FOS\RestBundle\View\View;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class BookController extends AbstractFOSRestController
 {
 
     #[Get(path: "/books")]
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
-    public function getAction(BookRepository $repository)
+    public function getAction(BookManager $bookManager)
     {
-        return $repository->findAll();
+        return $bookManager->getRepository()->findAll();
         
     }
 
     #[Post(path: "/books", name: "books_create")]
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
-    public function postAction(Request $request, EntityManagerInterface $entityManagerInterface, FilesystemOperator $defaultStorage)
+    public function postAction(
+        Request $request,
+        BookManager $bookManager,
+        BookFormProcessor $bookFormProcessor, 
+        )
     {
-        $bookDto = new BookDto();
+        $book = $bookManager->create();
 
-        $form = $this->createForm(BookFormType::class, $bookDto);
+        [$book, $error] = ($bookFormProcessor)($book, $request);
 
-        $form->handleRequest($request);
+        $statusCode = $book ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
+        $data = $book ? $book : $error;
 
-        if( $form->isSubmitted() && $form->isValid()) {
-            $book = new Book();
-            $image = $this->getFile($bookDto->base64Image, $defaultStorage);
+        return View::create($data, $statusCode);
 
-            $book->setTitle($bookDto->title);
-            $book->setImage($image);
-            $entityManagerInterface->persist($book);
-            $entityManagerInterface->flush();
+    }
 
-            return $book;
+    #[Get(path: "/books/{id}", name:"book_find_id")]
+    #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
+    public function getSingleAction(
+        BookManager $bookManager,
+        int $id,
+        )
+    {
+        $book = $bookManager->find($id);
+
+        if ( !$book ) {
+            return View::create('Book not found', Response::HTTP_BAD_REQUEST);
         }
 
-        return $form;
+        return View::create($book, Response::HTTP_OK);
+
+    }
+    #[Post(path: "/books/{id}", name: "books_edit")]
+    #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
+    public function editAction(
+        int $id,
+        BookFormProcessor $bookFormProcessor,
+        BookManager $bookManager,
+        Request $request,
+        )
+    {
+        $book = $bookManager->find($id);
+
+        if ( !$book ) {
+            return View::create('Book not found', Response::HTTP_BAD_REQUEST);
+        }
+
+        [$book, $error] = ($bookFormProcessor)($book, $request);
         
+        $statusCode = $book ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
+        $data = $book ? $book : $error;
+
+        return View::create($data, $statusCode);
+
+
+
+    }
+
+    #[Delete(path: "/books/{id}", name: "books_delete")]
+    #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
+    public function deleteAction(
+        int $id,
+        BookManager $bookManager,
+        )
+    {
+        $book = $bookManager->find($id);
+
+        if ( !$book ) {
+            return View::create('Book not found', Response::HTTP_BAD_REQUEST);
+        }
+
+        $bookManager->delete($book);
+
+        return View::create(null, Response::HTTP_NO_CONTENT);
+
+
+
     }
 
     private function getFile(string $img, $defaultStorage) :string
