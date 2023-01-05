@@ -1,4 +1,4 @@
-# Proyecto levantado en un entorno Dockerizado con LAMP.
+# Proyecto levantado en un entorno Dockerizado
 
 - Sistema backend de symfony 6 que replica los endpoints para una Libreria.
 
