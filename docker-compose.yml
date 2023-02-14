@@ -6,7 +6,7 @@ services:
     container_name: symfony-api-db
     image: mysql:8.0
     ports:
-      - 33006:3306
+      - 33008:3306
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}

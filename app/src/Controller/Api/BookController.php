@@ -21,6 +21,7 @@ class BookController extends AbstractFOSRestController
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
     public function getAction(BookManager $bookManager)
     {
+        $bookManager->getRepository()->findByTitle('dafadsfadsfasdfasdfdsafds');
         return $bookManager->getRepository()->findAll();
         
     }
